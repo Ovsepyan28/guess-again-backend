@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) // Уникальный идентификатор пользователя, автоматически увеличивающийся.
+  email     String   @unique // Поле email должно быть уникальным для каждого пользователя.
+  password  String // Пароль пользователя.
+  maxScore  Int      @default(0) // Максимальный счет, по умолчанию равен 0.
+  createdAt DateTime @default(now()) // Дата создания
+  updatedAt DateTime @updatedAt // Дата обновления
+}
