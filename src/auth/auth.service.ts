@@ -1,16 +1,16 @@
-import * as bcrypt from 'bcryptjs';
 import {
   ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthDto } from './dto/auth.dto';
-import { AuthRequest, PayloadForToken, Token } from './auth.interfaces';
-import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from 'src/users/dto/create.user.dto';
-import { EMAIL_CONFLICT_USER_AUTH, INCORRECT_AUTH } from './auth.constants';
 import { User } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import { CreateUserDto } from 'src/users/dto/create.user.dto';
+import { UsersService } from 'src/users/users.service';
+import { EMAIL_CONFLICT_USER_AUTH, INCORRECT_AUTH } from './auth.constants';
+import { AuthRequest, PayloadForToken, Token } from './auth.interfaces';
+import { AuthDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {

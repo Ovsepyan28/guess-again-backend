@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import { Observable } from 'rxjs';
 import { FORBIDDEN_AUTH, UNAUTHORIZED_USER_AUTH } from './auth.constants';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class RoleGuard implements CanActivate {

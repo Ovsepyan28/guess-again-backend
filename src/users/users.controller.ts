@@ -8,15 +8,15 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create.user.dto';
 import { Role as Roles, User } from '@prisma/client';
 import { Role } from 'src/auth/decorators/role.decorator';
-import { UsersService } from './users.service';
 import { RoleGuard } from 'src/auth/role.guard';
+import { CreateUserDto } from './dto/create.user.dto';
 import {
   NOT_FOUND_USER_BY_EMAIL,
   NOT_FOUND_USER_BY_ID,
 } from './user.constants';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
