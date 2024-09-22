@@ -8,17 +8,37 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) // Уникальный идентификатор пользователя, автоматически увеличивающийся
+  id        String   @id @default(uuid()) // Уникальный идентификатор пользователя
   email     String   @unique // Поле email должно быть уникальным для каждого пользователя
   password  String // Пароль пользователя
   name      String? //Имя пользователя, необязательный параметр
   role      Role     @default(USER) //Роль пользователя
   maxScore  Int      @default(0) // Максимальный счет, по умолчанию равен 0
   createdAt DateTime @default(now()) // Дата создания
-  updatedAt DateTime @updatedAt // Дата обновления
+  Game      Game[]
+}
+
+model Game {
+  id                String     @id @default(uuid()) // Уникальный идентификатор игры
+  userId            String // Идентификатор пользователя, который играет
+  user              User       @relation(fields: [userId], references: [id]) // Связь с пользователем
+  score             Int        @default(0) // Очки, набранные пользователем в этой игре
+  lives             Int        @default(3) // Количество жизней
+  questionsAnswered Int        @default(0) // Количество отвеченных вопросов
+  startedAt         DateTime   @default(now()) // Время начала игры
+  endedAt           DateTime? // Время окончания игры
+  status            GameStatus @default(IN_PROGRESS) // Статус игры
+  // totalTime         Int        @default(15) // Общее время, отведенное на все ответы в игре (в секундах)
+
+  @@index([userId])
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
 }

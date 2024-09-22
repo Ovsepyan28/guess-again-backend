@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { Request as ExpressRequest } from 'express';
 import { UNAUTHORIZED_USER_AUTH } from './auth.constants';
+import { JwtPayloadWithTimes, RequestWithUserPayload } from './auth.interfaces';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 
 @Injectable()
@@ -27,7 +28,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request: ExpressRequest = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
@@ -35,8 +36,8 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const user = this.jwtService.verify<User>(token);
-      request.user = user;
+      const user = this.jwtService.verify<JwtPayloadWithTimes>(token);
+      (request as RequestWithUserPayload).user = user;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       throw new UnauthorizedException(UNAUTHORIZED_USER_AUTH);
@@ -44,9 +45,7 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  extractTokenFromHeader(request: {
-    headers: { authorization: string };
-  }): string | undefined {
+  extractTokenFromHeader(request: ExpressRequest) {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'bearer' ? token : undefined;
   }

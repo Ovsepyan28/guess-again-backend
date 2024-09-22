@@ -8,35 +8,35 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { Role as Roles, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { Role } from 'src/auth/decorators/role.decorator';
 import { RoleGuard } from 'src/auth/role.guard';
 import { CreateUserDto } from './dto/create.user.dto';
 import {
   NOT_FOUND_USER_BY_EMAIL,
   NOT_FOUND_USER_BY_ID,
-} from './user.constants';
+} from './users.constants';
 import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Role(Roles.ADMIN)
+  @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.createUser(createUserDto);
   }
 
-  @Role(Roles.ADMIN)
+  @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get()
   async findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
-  @Role(Roles.ADMIN)
+  @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get('id/:id')
   async findUserById(@Param('id') id: User['id']): Promise<User> {
@@ -49,7 +49,7 @@ export class UsersController {
     return foundUser;
   }
 
-  @Role(Roles.ADMIN)
+  @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get('email/:email')
   async findUserByEmail(@Param('email') email: User['email']): Promise<User> {
@@ -62,7 +62,7 @@ export class UsersController {
     return foundUser;
   }
 
-  @Role(Roles.ADMIN)
+  @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Delete('id/:id')
   async deleteUserById(@Param('id') id: User['id']): Promise<User> {
@@ -75,7 +75,7 @@ export class UsersController {
     return this.usersService.deleteUserById(id);
   }
 
-  @Role(Roles.ADMIN)
+  @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Delete('email/:email')
   async deleteUserByEmail(@Param('email') email: User['email']): Promise<User> {
