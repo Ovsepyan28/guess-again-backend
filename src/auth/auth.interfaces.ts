@@ -5,7 +5,7 @@ export type PayloadForToken = {
   id: User['id'];
   email: User['email'];
   role: User['role'];
-  name: User['name'];
+  name?: User['name'];
   maxScore: User['maxScore'];
 };
 

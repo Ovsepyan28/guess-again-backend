@@ -11,34 +11,57 @@ model User {
   id        String   @id @default(uuid()) // Уникальный идентификатор пользователя
   email     String   @unique // Поле email должно быть уникальным для каждого пользователя
   password  String // Пароль пользователя
-  name      String? //Имя пользователя, необязательный параметр
-  role      Role     @default(USER) //Роль пользователя
+  name      String? // Имя пользователя, необязательный параметр
   maxScore  Int      @default(0) // Максимальный счет, по умолчанию равен 0
-  createdAt DateTime @default(now()) // Дата создания
-  Game      Game[]
+  createdAt DateTime @default(now()) // Дата создания пользователя
+  role      Role     @default(USER) // Роль пользователя
+  Game      Game[] // Связь с играми, которые создавал пользователь
 }
 
 model Game {
-  id                String     @id @default(uuid()) // Уникальный идентификатор игры
-  userId            String // Идентификатор пользователя, который играет
-  user              User       @relation(fields: [userId], references: [id]) // Связь с пользователем
-  score             Int        @default(0) // Очки, набранные пользователем в этой игре
-  lives             Int        @default(3) // Количество жизней
-  questionsAnswered Int        @default(0) // Количество отвеченных вопросов
-  startedAt         DateTime   @default(now()) // Время начала игры
-  endedAt           DateTime? // Время окончания игры
-  status            GameStatus @default(IN_PROGRESS) // Статус игры
-  // totalTime         Int        @default(15) // Общее время, отведенное на все ответы в игре (в секундах)
+  id        String   @id @default(uuid()) // Уникальный идентификатор игры
+  userId    String // Идентификатор пользователя, который создал игру
+  score     Int      @default(0) // Очки, набранные пользователем в игре
+  lives     Int      @default(3) // Количество жизней
+  startedAt DateTime @default(now()) // Время начала игры
+  endedAt   DateTime // Время окончания игры
+  User      User     @relation(fields: [userId], references: [id]) // Связь с пользователем, который создал игру
+}
 
-  @@index([userId])
+model Question {
+  id              String         @id @default(uuid()) // Уникальный идентификатор вопроса
+  gameId          String // Идентификатор игры, в которой вопрос был задан
+  frameId         String // Идентификатор кадра загаданного в вопросе
+  correctAnswerId String // Идентификатор правильного ответа (ссылка на AnswerOption)
+  AnswerOption    AnswerOption[] // Связь с предложенными ответами
+  Frame           Frame          @relation(fields: [frameId], references: [id]) // Связь с загаданным кадром
+}
+
+model AnswerOption {
+  id         String   @id @default(uuid()) // Уникальный идентификатор предложенного ответа
+  questionId String // Идентификатор вопроса, к которому относится ответ
+  movieId    String // Идентификатор фильма, который предлагается в качестве ответа
+  Question   Question @relation(fields: [questionId], references: [id]) // Связь с вопросом
+  Movie      Movie    @relation(fields: [movieId], references: [id]) // Связь с фильмом
+}
+
+model Movie {
+  id           String         @id @default(uuid()) // Уникальный идентификатор фильма
+  title        String // Наименование фильма
+  year         Int // Год выхода фильма
+  Frame        Frame[] // Связь с кадрами из фильма
+  AnswerOption AnswerOption[] // Связь с ответами, в которых предлагался фильм
+}
+
+model Frame {
+  id       String     @id @default(uuid()) // Уникальный идентификатор кадра
+  imageUrl String // URL кадра
+  movieId  String // Идентификатор фильма, из которого кадр
+  Movie    Movie      @relation(fields: [movieId], references: [id]) // Связь с фильмом, из которого кадр
+  Question Question[] // Связь с вопросами, в которых был загадан кадр
 }
 
 enum Role {
   USER
   ADMIN
-}
-
-enum GameStatus {
-  IN_PROGRESS
-  COMPLETED
 }

@@ -11,6 +11,7 @@ import {
 import { User } from '@prisma/client';
 import { Role } from 'src/auth/decorators/role.decorator';
 import { RoleGuard } from 'src/auth/role.guard';
+
 import { CreateUserDto } from './dto/create.user.dto';
 import {
   NOT_FOUND_USER_BY_EMAIL,

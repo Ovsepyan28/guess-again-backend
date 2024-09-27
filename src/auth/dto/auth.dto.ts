@@ -1,5 +1,6 @@
 import { User } from '@prisma/client';
 import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+
 import {
   INCORRECT_EMAIL_AUTH,
   INCORRECT_PASSWORD_AUTH,
