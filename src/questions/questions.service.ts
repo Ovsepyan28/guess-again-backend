@@ -3,6 +3,7 @@ import {
   AnswerOption,
   Frame,
   Game,
+  GameStatus,
   Movie,
   Question as QuestionModel,
 } from '@prisma/client';
@@ -72,10 +73,56 @@ export class QuestionsService {
       },
     });
 
+    // Обновляем поле игры lastQuestionId
+    await this.prisma.game.update({
+      where: { id: gameId },
+      data: {
+        lastQuestionId: question.id,
+        status: GameStatus['IN_PROGRESS'],
+      },
+    });
+
     // Возвращаем финальный объект
     return {
       id: question.id,
       imageUrl: correctFrame.imageUrl,
+      correctAnswerId: question.correctAnswerId,
+      answerOptions: answerOptions,
+    };
+  }
+
+  async findQuestionById(id: QuestionModel['id']): Promise<QuestionModel> {
+    const question = await this.prisma.question.findUnique({
+      where: { id: id },
+    });
+
+    return question;
+  }
+
+  async findFullQuestionById(id: QuestionModel['id']): Promise<Question> {
+    const question = await this.prisma.question.findUnique({
+      where: { id: id },
+      include: {
+        AnswerOption: {
+          include: {
+            Movie: true, // Включаем фильмы, связанные с вариантами ответа
+          },
+        },
+        Frame: true, // Включаем кадр, который был загадан в вопросе
+      },
+    });
+
+    const answerOptions = question.AnswerOption.map((answerOption) => {
+      return {
+        answerOptionId: answerOption.id,
+        title: answerOption.Movie.title,
+        year: answerOption.Movie.year,
+      };
+    });
+
+    return {
+      id: question.id,
+      imageUrl: question.Frame.imageUrl,
       correctAnswerId: question.correctAnswerId,
       answerOptions: answerOptions,
     };

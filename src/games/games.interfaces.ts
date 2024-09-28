@@ -1,10 +1,22 @@
-import { AnswerOption, Frame, Game, Movie, Question } from '@prisma/client';
+import {
+  AnswerOption,
+  Frame,
+  Game,
+  GameStatus,
+  Movie,
+  Question,
+} from '@prisma/client';
+
+export type NewGameRequest = {
+  gameId: Game['id'];
+};
 
 export type GameQuestionState = {
   gameId: Game['id'];
   lives: Game['lives'];
   score: Game['score'];
   status: GameStatus;
+  // timeToFinish: number | null; // Оставшееся время на игру в мс
   questionId?: Question['id'];
   imageUrl?: Frame['imageUrl'];
   answerOptions?: {
@@ -14,7 +26,7 @@ export type GameQuestionState = {
   }[];
 };
 
-export enum GameStatus {
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-}
+// export enum GameStatus {
+//   IN_PROGRESS = 'IN_PROGRESS',
+//   COMPLETED = 'COMPLETED',
+// }
