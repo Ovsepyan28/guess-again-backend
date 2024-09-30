@@ -10,7 +10,7 @@ import { CreateUserDto } from 'src/users/dto/create.user.dto';
 import { UsersService } from 'src/users/users.service';
 
 import { EMAIL_CONFLICT_USER_AUTH, INCORRECT_AUTH } from './auth.constants';
-import { AuthRequest, PayloadForToken, Token } from './auth.interfaces';
+import { AuthResponse, Token } from './auth.interfaces';
 import { AuthDto } from './dto/auth.dto';
 
 @Injectable()
@@ -20,17 +20,11 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(loginDto: AuthDto): Promise<AuthRequest> {
-    const user = await this.validateUser(loginDto);
-    const token: Token = await this.generateToken(user);
-    const authRequest: AuthRequest = await this.generateAuthRequest(
-      user,
-      token,
-    );
-    return authRequest;
+  async login(loginDto: AuthDto): Promise<User> {
+    return await this.validateUser(loginDto);
   }
 
-  async registration(createUserDto: CreateUserDto): Promise<AuthRequest> {
+  async registration(createUserDto: CreateUserDto): Promise<User> {
     const candidate = await this.userService.findUserByEmail(
       createUserDto.email,
     );
@@ -39,41 +33,35 @@ export class AuthService {
       throw new ConflictException(EMAIL_CONFLICT_USER_AUTH);
     }
 
-    const user = await this.userService.createUser(createUserDto);
-    const token: Token = await this.generateToken(user);
-    const authRequest: AuthRequest = await this.generateAuthRequest(
-      user,
-      token,
-    );
+    const user: User = await this.userService.createUser(createUserDto);
 
-    return authRequest;
+    return user;
   }
 
-  private async generateToken(user: User): Promise<Token> {
-    const payload: PayloadForToken = {
+  async generateToken(user: User): Promise<Token> {
+    const payload: AuthResponse = {
       email: user.email,
       id: user.id,
       role: user.role,
       name: user.name,
       maxScore: user.maxScore,
     };
+
     const token: Token = this.jwtService.sign(payload);
+
     return token;
   }
 
-  private async generateAuthRequest(
-    user: User,
-    token: Token,
-  ): Promise<AuthRequest> {
-    const authRequest: AuthRequest = {
+  async generateAuthResponse(user: User): Promise<AuthResponse> {
+    const authResponse: AuthResponse = {
       email: user.email,
       id: user.id,
       role: user.role,
       name: user.name,
       maxScore: user.maxScore,
-      token: token,
     };
-    return authRequest;
+
+    return authResponse;
   }
 
   private async validateUser({ email, password }: AuthDto): Promise<User> {
