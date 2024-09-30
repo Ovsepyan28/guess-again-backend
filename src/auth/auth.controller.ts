@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  HttpStatus,
   Post,
   Res,
   UsePipes,
@@ -10,6 +11,7 @@ import { User } from '@prisma/client';
 import { Response } from 'express';
 import { CreateUserDto } from 'src/users/dto/create.user.dto';
 
+import { LOGOUT_SUCCESSFUL } from './auth.constants';
 import { AuthResponse, Token } from './auth.interfaces';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
@@ -56,5 +58,16 @@ export class AuthController {
     });
 
     return this.authService.generateAuthResponse(user);
+  }
+
+  @Post('/logout')
+  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+    response.cookie('jwt', '', {
+      httpOnly: true,
+      secure: true,
+      expires: new Date(0),
+    });
+
+    response.status(HttpStatus.OK).json({ message: LOGOUT_SUCCESSFUL });
   }
 }

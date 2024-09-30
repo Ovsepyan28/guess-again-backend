@@ -6,3 +6,4 @@ export const EMAIL_CONFLICT_USER_AUTH =
   'Пользователь с таким email уже существует';
 export const UNAUTHORIZED_USER_AUTH = 'Пользователь не авторизован';
 export const FORBIDDEN_AUTH = 'Доступ запрещен';
+export const LOGOUT_SUCCESSFUL = 'Выход из системы завершен успешно';
