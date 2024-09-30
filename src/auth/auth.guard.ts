@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const request: ExpressRequest = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractTokenFromCookie(request);
 
     if (!token) {
       throw new UnauthorizedException(UNAUTHORIZED_USER_AUTH);
@@ -46,8 +46,7 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  extractTokenFromHeader(request: ExpressRequest) {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'bearer' ? token : undefined;
+  extractTokenFromCookie(request: ExpressRequest) {
+    return request.cookies?.jwt;
   }
 }

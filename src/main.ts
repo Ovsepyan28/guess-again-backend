@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 
 import { AppModule } from './app.module';
@@ -9,6 +10,7 @@ dotenv.config();
 async function bootstrap() {
   const PORT = process.env.PORT || 5000;
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
 
   // Устанавливаем глобальный префикс
   app.setGlobalPrefix('api');
