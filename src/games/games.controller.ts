@@ -15,7 +15,11 @@ import { QuestionsService } from 'src/questions/questions.service';
 
 import { SubmitAnswerDto } from './dto/submit.answer.dto';
 import { INVALID_DATA_PROVIDED, NOT_FOUND_GAME_BY_ID } from './games.constants';
-import { GameQuestionState, NewGameRequest } from './games.interfaces';
+import {
+  GameQuestionState,
+  NewGameRequest,
+  SubmitAnswerResponse,
+} from './games.interfaces';
 import { GamesService } from './games.service';
 
 @Controller('games')
@@ -88,55 +92,47 @@ export class GamesController {
   async submitAnswer(
     @Body() submitAnswerDto: SubmitAnswerDto,
     @Request() request: RequestWithUserPayload,
-  ): Promise<GameQuestionState> {
+  ): Promise<SubmitAnswerResponse> {
     const foundGame = await this.gamesService.findGameById(
       submitAnswerDto.gameId,
     );
 
-    // Игра не найдена или игра была создана другим пользователем
-    if (!foundGame || foundGame.userId !== request.user.id) {
+    // Игра не найдена
+    // или игра была создана другим пользователем
+    // или игра уже завершена
+    if (
+      !foundGame ||
+      foundGame.userId !== request.user.id ||
+      foundGame.status === GameStatus['COMPLETED']
+    ) {
       throw new BadRequestException(INVALID_DATA_PROVIDED);
-    }
-
-    // Игра завершена
-    if (foundGame.status === GameStatus['COMPLETED']) {
-      return this.gamesService.createGameQuestionState(foundGame);
     }
 
     const foundQuestion: QuestionModel =
       await this.questionsService.findQuestionById(submitAnswerDto.questionId);
 
-    // Вопрос не найден или вопрос был загадан в другой игре
-    if (!foundQuestion || foundQuestion.gameId !== foundGame.id) {
+    // Вопрос не найден
+    // или вопрос был загадан в другой игре
+    // или не последний вопрос в игре
+    if (
+      !foundQuestion ||
+      foundQuestion.gameId !== foundGame.id ||
+      foundQuestion.id !== foundGame.lastQuestionId
+    ) {
       throw new BadRequestException(INVALID_DATA_PROVIDED);
     }
 
     const isCorrectAnswer: boolean =
       submitAnswerDto.questionId === foundGame.lastQuestionId &&
-      submitAnswerDto.selectedAnswerOption === foundQuestion.correctAnswerId;
+      submitAnswerDto.selectedAnswerOptionId === foundQuestion.correctAnswerId;
 
-    const updatedGame: Game = await this.gamesService.updateGame(
-      submitAnswerDto.gameId,
-      isCorrectAnswer,
-    );
+    await this.gamesService.updateGame(foundGame, isCorrectAnswer);
 
-    if (updatedGame.status === GameStatus['COMPLETED']) {
-      const gameQuestionState: GameQuestionState =
-        await this.gamesService.createGameQuestionState(updatedGame);
+    const submitAnswerResponse: SubmitAnswerResponse = {
+      selectedAnswerOptionId: submitAnswerDto.selectedAnswerOptionId,
+      correctAnswerId: foundQuestion.correctAnswerId,
+    };
 
-      return gameQuestionState;
-    } else {
-      const newQuestion: Question = await this.questionsService.createQuestion(
-        submitAnswerDto.gameId,
-      );
-
-      const gameQuestionState: GameQuestionState =
-        await this.gamesService.createGameQuestionState(
-          updatedGame,
-          newQuestion,
-        );
-
-      return gameQuestionState;
-    }
+    return submitAnswerResponse;
   }
 }

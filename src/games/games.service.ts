@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { Game, GameStatus, Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { Question } from 'src/questions/questions.interfaces';
+import { QuestionsService } from 'src/questions/questions.service';
 
 import { INITIAL_GAME_LIVES } from './games.constants';
 import { GameQuestionState } from './games.interfaces';
 @Injectable()
 export class GamesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly questionsService: QuestionsService,
+  ) {}
 
   async createNewGame(userId: User['id']): Promise<Game> {
     // const startedAt = new Date();
@@ -60,14 +64,7 @@ export class GamesService {
     };
   }
 
-  async updateGame(
-    gameId: Game['id'],
-    isCorrectAnswer: boolean,
-  ): Promise<Game> {
-    const game = await this.prisma.game.findUnique({
-      where: { id: gameId },
-    });
-
+  async updateGame(game: Game, isCorrectAnswer: boolean): Promise<void> {
     const updatedGameData: Prisma.GameUpdateInput = {
       score: isCorrectAnswer ? game.score + 1 : game.score,
       lives: !isCorrectAnswer ? game.lives - 1 : game.lives,
@@ -77,12 +74,15 @@ export class GamesService {
     if (updatedGameData.lives === 0) {
       updatedGameData.status = GameStatus['COMPLETED']; // Заканчиваем игру
     }
+    const newQuestion: Question = await this.questionsService.createQuestion(
+      game.id,
+    );
 
-    const updatedGame = await this.prisma.game.update({
-      where: { id: gameId },
+    updatedGameData.lastQuestionId = newQuestion.id;
+
+    await this.prisma.game.update({
+      where: { id: game.id },
       data: updatedGameData,
     });
-
-    return updatedGame;
   }
 }

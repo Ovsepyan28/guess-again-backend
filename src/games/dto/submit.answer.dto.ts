@@ -11,5 +11,5 @@ export class SubmitAnswerDto {
   questionId: Question['id']; // Идентификатор вопроса
 
   @IsNotEmpty({ message: INVALID_DATA_PROVIDED })
-  selectedAnswerOption: AnswerOption['id']; // Идентификатор выбранного ответа
+  selectedAnswerOptionId: AnswerOption['id']; // Идентификатор выбранного ответа
 }

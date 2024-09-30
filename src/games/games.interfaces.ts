@@ -26,7 +26,7 @@ export type GameQuestionState = {
   }[];
 };
 
-// export enum GameStatus {
-//   IN_PROGRESS = 'IN_PROGRESS',
-//   COMPLETED = 'COMPLETED',
-// }
+export type SubmitAnswerResponse = {
+  selectedAnswerOptionId: AnswerOption['id'];
+  correctAnswerId: AnswerOption['id'];
+};
