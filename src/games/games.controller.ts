@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -13,7 +14,7 @@ import { Question } from 'src/questions/questions.interfaces';
 import { QuestionsService } from 'src/questions/questions.service';
 
 import { SubmitAnswerDto } from './dto/submit.answer.dto';
-import { NOT_FOUND_GAME_BY_ID } from './games.constants';
+import { INVALID_DATA_PROVIDED, NOT_FOUND_GAME_BY_ID } from './games.constants';
 import { GameQuestionState, NewGameRequest } from './games.interfaces';
 import { GamesService } from './games.service';
 
@@ -42,11 +43,12 @@ export class GamesController {
   ): Promise<GameQuestionState> {
     const foundGame: Game = await this.gamesService.findGameById(id);
 
+    // Игра не найдена или игра была создана другим пользователем
     if (!foundGame || foundGame.userId !== request.user.id) {
       throw new NotFoundException(NOT_FOUND_GAME_BY_ID);
     }
 
-    // Игра создана, но не сформирован ни один вопрос
+    // Игра создана и не сформирован ни один вопрос
     if (foundGame.status === GameStatus['CREATED']) {
       const newQuestion: Question =
         await this.questionsService.createQuestion(id);
@@ -57,8 +59,8 @@ export class GamesController {
       return gameQuestionState;
     }
 
-    // Игра создана и создан вопрос
-    else {
+    // Игра создана и создан вопрос, но игра не завершена
+    else if (foundGame.status === GameStatus['IN_PROGRESS']) {
       const lastQuestion: Question =
         await this.questionsService.findFullQuestionById(
           foundGame.lastQuestionId,
@@ -72,17 +74,46 @@ export class GamesController {
 
       return gameQuestionState;
     }
+
+    // Игра завершена GameStatus - COMPLETED
+    else {
+      const gameQuestionState: GameQuestionState =
+        await this.gamesService.createGameQuestionState(foundGame);
+
+      return gameQuestionState;
+    }
   }
 
   @Post('answer')
   async submitAnswer(
     @Body() submitAnswerDto: SubmitAnswerDto,
+    @Request() request: RequestWithUserPayload,
   ): Promise<GameQuestionState> {
-    const question: QuestionModel =
+    const foundGame = await this.gamesService.findGameById(
+      submitAnswerDto.gameId,
+    );
+
+    // Игра не найдена или игра была создана другим пользователем
+    if (!foundGame || foundGame.userId !== request.user.id) {
+      throw new BadRequestException(INVALID_DATA_PROVIDED);
+    }
+
+    // Игра завершена
+    if (foundGame.status === GameStatus['COMPLETED']) {
+      return this.gamesService.createGameQuestionState(foundGame);
+    }
+
+    const foundQuestion: QuestionModel =
       await this.questionsService.findQuestionById(submitAnswerDto.questionId);
 
+    // Вопрос не найден или вопрос был загадан в другой игре
+    if (!foundQuestion || foundQuestion.gameId !== foundGame.id) {
+      throw new BadRequestException(INVALID_DATA_PROVIDED);
+    }
+
     const isCorrectAnswer: boolean =
-      submitAnswerDto.selectedAnswerOption === question.correctAnswerId;
+      submitAnswerDto.questionId === foundGame.lastQuestionId &&
+      submitAnswerDto.selectedAnswerOption === foundQuestion.correctAnswerId;
 
     const updatedGame: Game = await this.gamesService.updateGame(
       submitAnswerDto.gameId,
