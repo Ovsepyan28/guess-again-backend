@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Post,
+  Request,
   Res,
   UsePipes,
   ValidationPipe,
@@ -10,16 +12,20 @@ import {
 import { User } from '@prisma/client';
 import { Response } from 'express';
 import { CreateUserDto } from 'src/users/dto/create.user.dto';
+import { UsersService } from 'src/users/users.service';
 
 import { LOGOUT_SUCCESSFUL } from './auth.constants';
-import { AuthResponse, Token } from './auth.interfaces';
+import { AuthResponse, RequestWithUserPayload, Token } from './auth.interfaces';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { AuthDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Public()
   @Post('/login')
@@ -69,5 +75,15 @@ export class AuthController {
     });
 
     response.status(HttpStatus.OK).json({ message: LOGOUT_SUCCESSFUL });
+  }
+
+  @Get('/whoami')
+  async whoami(
+    @Request() request: RequestWithUserPayload,
+  ): Promise<AuthResponse> {
+    const foundUser: User = await this.usersService.findUserById(
+      request.user.id,
+    );
+    return this.authService.generateAuthResponse(foundUser);
   }
 }
