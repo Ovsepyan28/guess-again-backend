@@ -11,14 +11,14 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { Response } from 'express';
-import { CreateUserDto } from 'src/users/dto/create.user.dto';
 import { UsersService } from 'src/users/users.service';
 
 import { LOGOUT_SUCCESSFUL } from './auth.constants';
 import { AuthResponse, RequestWithUserPayload, Token } from './auth.interfaces';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
-import { AuthDto } from './dto/auth.dto';
+import { LoginDto } from './dto/login.dto';
+import { SignUpDto } from './dto/signUp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -32,7 +32,7 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   async login(
     @Res({ passthrough: true }) response: Response,
-    @Body() loginDto: AuthDto,
+    @Body() loginDto: LoginDto,
   ): Promise<AuthResponse> {
     const user: User = await this.authService.login(loginDto);
     const token: Token = await this.authService.generateToken(user);
@@ -43,17 +43,19 @@ export class AuthController {
       maxAge: 3600 * 24 * 7 * 1000,
     });
 
+    response.status(200);
+
     return this.authService.generateAuthResponse(user);
   }
 
   @Public()
-  @Post('/registration')
+  @Post('/signup')
   @UsePipes(new ValidationPipe())
   async registration(
     @Res({ passthrough: true }) response: Response,
-    @Body() registrationDto: CreateUserDto,
+    @Body() signUpDto: SignUpDto,
   ): Promise<AuthResponse> {
-    const user: User = await this.authService.registration(registrationDto);
+    const user: User = await this.authService.signUp(signUpDto);
 
     const token: Token = await this.authService.generateToken(user);
 

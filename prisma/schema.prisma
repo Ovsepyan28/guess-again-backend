@@ -11,7 +11,7 @@ model User {
   id        String   @id @default(uuid()) // Уникальный идентификатор пользователя
   email     String   @unique // Поле email должно быть уникальным для каждого пользователя
   password  String // Пароль пользователя
-  name      String // Имя пользователя, необязательный параметр
+  userName  String // Имя пользователя
   maxScore  Int      @default(0) // Максимальный счет, по умолчанию равен 0
   createdAt DateTime @default(now()) // Дата создания пользователя
   role      Role     @default(USER) // Роль пользователя

@@ -5,7 +5,7 @@ export type AuthResponse = {
   id: User['id'];
   email: User['email'];
   role: User['role'];
-  name: User['name'];
+  userName: User['userName'];
   maxScore: User['maxScore'];
 };
 
