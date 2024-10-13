@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Game, GameStatus, Question as QuestionModel } from '@prisma/client';
 import { RequestWithUserPayload } from 'src/auth/auth.interfaces';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { Question } from 'src/questions/questions.interfaces';
 import { QuestionsService } from 'src/questions/questions.service';
 
@@ -19,6 +20,7 @@ import {
   GameQuestionState,
   NewGameRequest,
   SubmitAnswerResponse,
+  TopPlayer,
 } from './games.interfaces';
 import { GamesService } from './games.service';
 
@@ -38,6 +40,14 @@ export class GamesController {
     );
 
     return { gameId: newGame.id };
+  }
+
+  @Public()
+  @Get('top10')
+  async getTopPlayers(): Promise<TopPlayer[]> {
+    const top10: TopPlayer[] = await this.gamesService.getTop10();
+
+    return top10;
   }
 
   @Get(':id')

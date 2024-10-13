@@ -5,6 +5,7 @@ import {
   GameStatus,
   Movie,
   Question,
+  User,
 } from '@prisma/client';
 
 export type NewGameRequest = {
@@ -16,7 +17,6 @@ export type GameQuestionState = {
   lives: Game['lives'];
   score: Game['score'];
   status: GameStatus;
-  // timeToFinish: number | null; // Оставшееся время на игру в мс
   questionId?: Question['id'];
   imageUrl?: Frame['imageUrl'];
   answerOptions?: {
@@ -29,4 +29,9 @@ export type GameQuestionState = {
 export type SubmitAnswerResponse = {
   selectedAnswerOptionId: AnswerOption['id'];
   correctAnswerId: AnswerOption['id'];
+};
+
+export type TopPlayer = {
+  userName: User['userName'];
+  maxScore: User['maxScore'];
 };

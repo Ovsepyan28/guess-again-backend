@@ -3,27 +3,24 @@ import { Game, GameStatus, Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { Question } from 'src/questions/questions.interfaces';
 import { QuestionsService } from 'src/questions/questions.service';
+import { UsersService } from 'src/users/users.service';
 
 import { INITIAL_GAME_LIVES } from './games.constants';
-import { GameQuestionState } from './games.interfaces';
+import { GameQuestionState, TopPlayer } from './games.interfaces';
 @Injectable()
 export class GamesService {
   constructor(
     private prisma: PrismaService,
     private readonly questionsService: QuestionsService,
+    private readonly userService: UsersService,
   ) {}
 
   async createNewGame(userId: User['id']): Promise<Game> {
-    // const startedAt = new Date();
-    // const endedAt = new Date(startedAt.getTime() + INITIAL_GAME_TIME * 1000);
-
     const newGame = await this.prisma.game.create({
       data: {
         userId: userId,
         lives: INITIAL_GAME_LIVES,
         status: GameStatus['CREATED'],
-        // startedAt: startedAt,
-        // endedAt: endedAt,
         lastQuestionId: null, // На данном этапе не создан ни один вопрос в игре
       },
     });
@@ -44,20 +41,11 @@ export class GamesService {
     const status =
       game.lives > 0 ? GameStatus['IN_PROGRESS'] : GameStatus['COMPLETED'];
 
-    // Date.now() < new Date(game.endedAt).getTime()
-    //   ? GameStatus['IN_PROGRESS']
-    //   : GameStatus['COMPLETED'];
-
-    // const timeToFinish = Math.floor(
-    //   new Date(game.endedAt).getTime() - new Date(game.startedAt).getTime(),
-    // );
-
     return {
       gameId: game.id,
       lives: game.lives,
       score: game.score,
       status: status,
-      // timeToFinish: timeToFinish > 0 ? timeToFinish : null,
       questionId: question?.id,
       imageUrl: question?.imageUrl,
       answerOptions: question?.answerOptions,
@@ -69,6 +57,19 @@ export class GamesService {
       score: isCorrectAnswer ? game.score + 1 : game.score,
       lives: !isCorrectAnswer ? game.lives - 1 : game.lives,
     };
+    // Обновляем максимальное количество набранных очков пользователя,
+    // если текущее значение превосходит зафиксированное
+    const user = await this.userService.findUserById(game.userId);
+    if ((updatedGameData.score as number) > user.maxScore) {
+      const updatedUserData: Prisma.UserUpdateInput = {
+        maxScore: updatedGameData.score,
+      };
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: updatedUserData,
+      });
+    }
 
     // Проверяем количество жизней, если 0 — заканчиваем игру
     if (updatedGameData.lives === 0) {
@@ -84,5 +85,19 @@ export class GamesService {
       where: { id: game.id },
       data: updatedGameData,
     });
+  }
+
+  async getTop10(): Promise<TopPlayer[]> {
+    const topPlayers = await this.prisma.user.findMany({
+      orderBy: {
+        maxScore: 'desc',
+      },
+      take: 10, // Ограничение на 10 игроков
+      select: {
+        userName: true,
+        maxScore: true,
+      },
+    });
+    return topPlayers;
   }
 }

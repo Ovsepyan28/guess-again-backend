@@ -24,8 +24,6 @@ model Game {
   score          Int        @default(0) // Очки, набранные пользователем в игре
   lives          Int        @default(3) // Количество жизней
   status         GameStatus @default(CREATED)
-  // startedAt      DateTime @default(now()) // Время начала игры
-  // endedAt        DateTime // Время окончания игры
   lastQuestionId String? // Идентификатор последнего вопроса
   User           User       @relation(fields: [userId], references: [id]) // Связь с пользователем, который создал игру
 }
