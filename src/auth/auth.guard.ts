@@ -25,6 +25,7 @@ export class AuthGuard implements CanActivate {
       context.getClass(),
     ]);
 
+    // Если маршрут публичный, разрешаем доступ
     if (isPublic) {
       return true;
     }
@@ -32,6 +33,7 @@ export class AuthGuard implements CanActivate {
     const request: ExpressRequest = context.switchToHttp().getRequest();
     const token = this.extractTokenFromCookie(request);
 
+    // Если токен отсутствует, выбрасываем исключение UnauthorizedException
     if (!token) {
       throw new UnauthorizedException(UNAUTHORIZED_USER_AUTH);
     }
@@ -43,9 +45,12 @@ export class AuthGuard implements CanActivate {
     } catch (e) {
       throw new UnauthorizedException(UNAUTHORIZED_USER_AUTH);
     }
+
+    // Если все проверки пройдены, разрешаем доступ
     return true;
   }
 
+  // Метод для извлечения токена из cookie
   extractTokenFromCookie(request: ExpressRequest) {
     return request.cookies?.jwt;
   }

@@ -27,6 +27,7 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
+  // Открытый маршрут для входа
   @Public()
   @Post('/login')
   @UsePipes(new ValidationPipe())
@@ -35,6 +36,7 @@ export class AuthController {
     @Body() loginDto: LoginDto,
   ): Promise<AuthResponse> {
     const user: User = await this.authService.login(loginDto);
+
     const token: Token = await this.authService.generateToken(user);
 
     response.cookie('jwt', token, {
@@ -43,11 +45,12 @@ export class AuthController {
       maxAge: 3600 * 24 * 7 * 1000,
     });
 
-    response.status(200);
+    response.status(200); // Устанавливаем статус ответа на 200, так по умолчанию метод POST позвращает 201
 
     return this.authService.generateAuthResponse(user);
   }
 
+  // Открытый маршрут для регистрации
   @Public()
   @Post('/signup')
   @UsePipes(new ValidationPipe())
@@ -68,17 +71,20 @@ export class AuthController {
     return this.authService.generateAuthResponse(user);
   }
 
+  // Маршрут для выхода
   @Post('/logout')
   async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+    // Удаляем cookie с токеном
     response.cookie('jwt', '', {
       httpOnly: true,
       secure: true,
-      expires: new Date(0),
+      expires: new Date(0), // Устанавливаем срок жизни cookie на прошлую дату
     });
 
     response.status(HttpStatus.OK).json({ message: LOGOUT_SUCCESSFUL });
   }
 
+  // Маршрут для получения информации о текущем пользователе
   @Get('/whoami')
   async whoami(
     @Request() request: RequestWithUserPayload,
@@ -86,6 +92,7 @@ export class AuthController {
     const foundUser: User = await this.usersService.findUserById(
       request.user.id,
     );
+
     return this.authService.generateAuthResponse(foundUser);
   }
 }

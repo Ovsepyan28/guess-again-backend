@@ -23,6 +23,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // Эндпоинт для создания нового пользователя
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Post()
@@ -30,6 +31,7 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
+  // Эндпоинт для получения всех пользователей
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get()
@@ -37,6 +39,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  // Эндпоинт для поиска пользователя по id
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get('id/:id')
@@ -50,6 +53,7 @@ export class UsersController {
     return foundUser;
   }
 
+  // Эндпоинт для поиска пользователя по email
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get('email/:email')
@@ -63,6 +67,7 @@ export class UsersController {
     return foundUser;
   }
 
+  // Эндпоинт для удаления пользователя по id
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Delete('id/:id')
@@ -76,6 +81,7 @@ export class UsersController {
     return this.usersService.deleteUserById(id);
   }
 
+  // Эндпоинт для удаления пользователя по email
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Delete('email/:email')

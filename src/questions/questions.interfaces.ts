@@ -5,6 +5,7 @@ import {
   Question as QuestionModel,
 } from '@prisma/client';
 
+// Определяем тип Question, который представляет вопрос в игре
 export type Question = {
   id: QuestionModel['id'];
   imageUrl: Frame['imageUrl'];

@@ -15,8 +15,9 @@ import { Question } from './questions.interfaces';
 export class QuestionsService {
   constructor(private prisma: PrismaService) {}
 
+  // Метод для создания нового вопроса
   async createQuestion(gameId: Game['id']): Promise<Question> {
-    // Получаем 4 случайных фильма
+    // Получаем 4 случайных фильма из базы данных
     const randomMovies: Movie[] = await this.prisma.$queryRaw`
       SELECT * FROM "Movie"
       ORDER BY RANDOM()
@@ -35,7 +36,7 @@ export class QuestionsService {
       LIMIT 1
     `;
 
-    // Создаем новый вопрос
+    // Создаем новый вопрос в базе данных
     const question: QuestionModel = await this.prisma.question.create({
       data: {
         gameId,
@@ -82,7 +83,7 @@ export class QuestionsService {
       },
     });
 
-    // Возвращаем финальный объект
+    // Возвращаем финальный объект вопроса
     return {
       id: question.id,
       imageUrl: correctFrame.imageUrl,
@@ -91,6 +92,7 @@ export class QuestionsService {
     };
   }
 
+  // Метод для нахождения вопроса по его идентификатору
   async findQuestionById(id: QuestionModel['id']): Promise<QuestionModel> {
     const question = await this.prisma.question.findUnique({
       where: { id: id },
@@ -99,6 +101,7 @@ export class QuestionsService {
     return question;
   }
 
+  // Метод для нахождения полного вопроса с вариантами ответов и кадром
   async findFullQuestionById(id: QuestionModel['id']): Promise<Question> {
     const question = await this.prisma.question.findUnique({
       where: { id: id },

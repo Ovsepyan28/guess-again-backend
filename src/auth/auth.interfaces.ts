@@ -1,6 +1,7 @@
 import { User } from '@prisma/client';
 import { Request } from 'express';
 
+// Ответ при успешной аутентификации
 export type AuthResponse = {
   id: User['id'];
   email: User['email'];
@@ -11,6 +12,7 @@ export type AuthResponse = {
 
 export type Token = string;
 
+// Тип JwtPayloadWithTimes расширяет AuthResponse, добавляя поля времени генерации и истечения токена
 export type JwtPayloadWithTimes = AuthResponse &
   Token & {
     iat: number; // Issued At (время генерации токена)

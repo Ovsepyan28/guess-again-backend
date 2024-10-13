@@ -15,6 +15,7 @@ export class GamesService {
     private readonly userService: UsersService,
   ) {}
 
+  // Метод для создания новой игры для пользователя
   async createNewGame(userId: User['id']): Promise<Game> {
     const newGame = await this.prisma.game.create({
       data: {
@@ -28,16 +29,19 @@ export class GamesService {
     return newGame;
   }
 
+  // Метод для поиска игры по её ID
   async findGameById(id: Game['id']): Promise<Game | null> {
     return this.prisma.game.findUnique({
       where: { id },
     });
   }
 
+  // Метод для создания состояния игры с возможным текущим вопросом
   async createGameQuestionState(
     game: Game,
-    question?: Question,
+    question?: Question, // Вопрос может быть необязательным (если игра завершена)
   ): Promise<GameQuestionState> {
+    // Определяем статус игры
     const status =
       game.lives > 0 ? GameStatus['IN_PROGRESS'] : GameStatus['COMPLETED'];
 
@@ -52,13 +56,14 @@ export class GamesService {
     };
   }
 
+  // Метод для обновления игры на основе правильного или неправильного ответа
   async updateGame(game: Game, isCorrectAnswer: boolean): Promise<void> {
     const updatedGameData: Prisma.GameUpdateInput = {
       score: isCorrectAnswer ? game.score + 1 : game.score,
       lives: !isCorrectAnswer ? game.lives - 1 : game.lives,
     };
-    // Обновляем максимальное количество набранных очков пользователя,
-    // если текущее значение превосходит зафиксированное
+
+    // Обновляем максимальный счёт пользователя, если текущий счёт выше
     const user = await this.userService.findUserById(game.userId);
     if ((updatedGameData.score as number) > user.maxScore) {
       const updatedUserData: Prisma.UserUpdateInput = {
@@ -71,10 +76,11 @@ export class GamesService {
       });
     }
 
-    // Проверяем количество жизней, если 0 — заканчиваем игру
+    // Проверяем количество жизней, если 0 — завершаем игру
     if (updatedGameData.lives === 0) {
       updatedGameData.status = GameStatus['COMPLETED']; // Заканчиваем игру
     }
+
     const newQuestion: Question = await this.questionsService.createQuestion(
       game.id,
     );
@@ -87,6 +93,7 @@ export class GamesService {
     });
   }
 
+  // Метод для получения топ-10 игроков по максимальному счёту
   async getTop10(): Promise<TopPlayer[]> {
     const topPlayers = await this.prisma.user.findMany({
       orderBy: {

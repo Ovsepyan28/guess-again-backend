@@ -8,10 +8,12 @@ import {
   User,
 } from '@prisma/client';
 
+// Тип для ответа на создание новой игры
 export type NewGameRequest = {
   gameId: Game['id'];
 };
 
+// Тип для состояния игры и текущего вопроса
 export type GameQuestionState = {
   gameId: Game['id'];
   lives: Game['lives'];
@@ -26,11 +28,13 @@ export type GameQuestionState = {
   }[];
 };
 
+// Тип для ответа на отправку ответа на вопрос
 export type SubmitAnswerResponse = {
   selectedAnswerOptionId: AnswerOption['id'];
   correctAnswerId: AnswerOption['id'];
 };
 
+// Тип для данных о топ-игроках
 export type TopPlayer = {
   userName: User['userName'];
   maxScore: User['maxScore'];

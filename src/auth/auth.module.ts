@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
   providers: [
     AuthService,
     {
-      provide: APP_GUARD,
+      provide: APP_GUARD, // Устанавливаем глобальный guard для всей системы
       useClass: AuthGuard,
     },
   ],
@@ -21,7 +21,7 @@ import { AuthService } from './auth.service';
       secret: process.env.JWT_KEY || 'SECRET',
       signOptions: { expiresIn: '7d' },
     }),
-    forwardRef(() => UsersModule),
+    forwardRef(() => UsersModule), // forwardRef предотвращает циклическую зависимость между AuthModule и UsersModule
   ],
   exports: [JwtModule],
 })

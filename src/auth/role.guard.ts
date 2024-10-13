@@ -26,12 +26,15 @@ export class RoleGuard implements CanActivate {
         [context.getHandler(), context.getClass()],
       );
 
+      // Если роль не указана, доступ разрешен
       if (!requiredRole) return true;
 
+      // Проверяем, совпадает ли роль пользователя с требуемой
       if (request.user.role !== requiredRole) {
         throw new ForbiddenException(FORBIDDEN_AUTH);
       }
 
+      // Возвращаем true, если роли совпадают
       return request.user.role === requiredRole;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {

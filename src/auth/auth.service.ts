@@ -20,10 +20,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  // Логика входа: валидация пользователя
   async login(loginDto: LoginDto): Promise<User> {
     return await this.validateUser(loginDto);
   }
 
+  // Логика регистрации: проверка на уникальность email и создание пользователя
   async signUp(signUpDto: SignUpDto): Promise<User> {
     const candidate = await this.userService.findUserByEmail(signUpDto.email);
 
@@ -36,6 +38,7 @@ export class AuthService {
     return user;
   }
 
+  // Генерация JWT токена на основе данных пользователя
   async generateToken(user: User): Promise<Token> {
     const payload: AuthResponse = {
       email: user.email,
@@ -50,6 +53,7 @@ export class AuthService {
     return token;
   }
 
+  // Генерация объекта AuthResponse (данные пользователя без пароля) для отправки клиенту
   async generateAuthResponse(user: User): Promise<AuthResponse> {
     const authResponse: AuthResponse = {
       email: user.email,
@@ -62,6 +66,7 @@ export class AuthService {
     return authResponse;
   }
 
+  // Валидация пользователя: проверяем наличие в базе и правильность пароля
   private async validateUser({ email, password }: LoginDto): Promise<User> {
     const user = await this.userService.findUserByEmail(email);
 

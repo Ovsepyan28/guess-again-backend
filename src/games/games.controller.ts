@@ -31,6 +31,7 @@ export class GamesController {
     private readonly questionsService: QuestionsService,
   ) {}
 
+  // Маршрут для создания новой игры
   @Post('new')
   async createNewGame(
     @Request() request: RequestWithUserPayload,
@@ -42,6 +43,7 @@ export class GamesController {
     return { gameId: newGame.id };
   }
 
+  // Публичный маршрут для получения топ-10 игроков
   @Public()
   @Get('top10')
   async getTopPlayers(): Promise<TopPlayer[]> {
@@ -50,6 +52,7 @@ export class GamesController {
     return top10;
   }
 
+  // Получение состояния игры и вопроса по ID игры
   @Get(':id')
   async getGameQuestionState(
     @Param('id') id: Game['id'],
@@ -57,12 +60,12 @@ export class GamesController {
   ): Promise<GameQuestionState> {
     const foundGame: Game = await this.gamesService.findGameById(id);
 
-    // Игра не найдена или игра была создана другим пользователем
+    // Игра не найдена или принадлежит другому пользователю
     if (!foundGame || foundGame.userId !== request.user.id) {
       throw new NotFoundException(NOT_FOUND_GAME_BY_ID);
     }
 
-    // Игра создана и не сформирован ни один вопрос
+    // Игра только создана, вопросов ещё нет
     if (foundGame.status === GameStatus['CREATED']) {
       const newQuestion: Question =
         await this.questionsService.createQuestion(id);
@@ -73,7 +76,7 @@ export class GamesController {
       return gameQuestionState;
     }
 
-    // Игра создана и создан вопрос, но игра не завершена
+    // Игра в процессе, но не завершена
     else if (foundGame.status === GameStatus['IN_PROGRESS']) {
       const lastQuestion: Question =
         await this.questionsService.findFullQuestionById(
@@ -89,7 +92,7 @@ export class GamesController {
       return gameQuestionState;
     }
 
-    // Игра завершена GameStatus - COMPLETED
+    // Игра завершена
     else {
       const gameQuestionState: GameQuestionState =
         await this.gamesService.createGameQuestionState(foundGame);
@@ -98,6 +101,7 @@ export class GamesController {
     }
   }
 
+  // Маршрут для отправки ответа на вопрос
   @Post('answer')
   async submitAnswer(
     @Body() submitAnswerDto: SubmitAnswerDto,
@@ -107,9 +111,7 @@ export class GamesController {
       submitAnswerDto.gameId,
     );
 
-    // Игра не найдена
-    // или игра была создана другим пользователем
-    // или игра уже завершена
+    // Игра не найдена, принадлежит другому пользователю или уже завершена
     if (
       !foundGame ||
       foundGame.userId !== request.user.id ||
@@ -121,9 +123,7 @@ export class GamesController {
     const foundQuestion: QuestionModel =
       await this.questionsService.findQuestionById(submitAnswerDto.questionId);
 
-    // Вопрос не найден
-    // или вопрос был загадан в другой игре
-    // или не последний вопрос в игре
+    // Вопрос не найден, принадлежит другой игре или не является последним в игре
     if (
       !foundQuestion ||
       foundQuestion.gameId !== foundGame.id ||
@@ -132,6 +132,7 @@ export class GamesController {
       throw new BadRequestException(INVALID_DATA_PROVIDED);
     }
 
+    // Проверяем, правильный ли выбран ответ
     const isCorrectAnswer: boolean =
       submitAnswerDto.questionId === foundGame.lastQuestionId &&
       submitAnswerDto.selectedAnswerOptionId === foundQuestion.correctAnswerId;
