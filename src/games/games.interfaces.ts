@@ -5,7 +5,6 @@ import {
   GameStatus,
   Movie,
   Question,
-  User,
 } from '@prisma/client';
 
 // Тип для ответа на создание новой игры
@@ -32,10 +31,4 @@ export type GameQuestionState = {
 export type SubmitAnswerResponse = {
   selectedAnswerOptionId: AnswerOption['id'];
   correctAnswerId: AnswerOption['id'];
-};
-
-// Тип для данных о топ-игроках
-export type TopPlayer = {
-  userName: User['userName'];
-  maxScore: User['maxScore'];
 };

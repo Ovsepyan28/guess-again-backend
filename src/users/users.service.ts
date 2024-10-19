@@ -4,6 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from 'src/prisma.service';
 
 import { CreateUserDto } from './dto/create.user.dto';
+import { TopPlayer } from './users.interfaces';
 
 @Injectable()
 export class UsersService {
@@ -58,5 +59,25 @@ export class UsersService {
     return this.prisma.user.delete({
       where: { email },
     });
+  }
+
+  // Метод для получения топ-10 игроков по максимальному счёту
+  async getTop10(): Promise<TopPlayer[]> {
+    const topPlayers = await this.prisma.user.findMany({
+      where: {
+        maxScore: {
+          gt: 0, // Условие: maxScore должен быть больше 0
+        },
+      },
+      orderBy: {
+        maxScore: 'desc',
+      },
+      take: 10, // Ограничение на 10 игроков
+      select: {
+        userName: true,
+        maxScore: true,
+      },
+    });
+    return topPlayers;
   }
 }

@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { Role } from 'src/auth/decorators/role.decorator';
 import { RoleGuard } from 'src/auth/role.guard';
 
@@ -17,6 +18,7 @@ import {
   NOT_FOUND_USER_BY_EMAIL,
   NOT_FOUND_USER_BY_ID,
 } from './users.constants';
+import { TopPlayer } from './users.interfaces';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -93,5 +95,14 @@ export class UsersController {
     }
 
     return this.usersService.deleteUserByEmail(email);
+  }
+
+  // Публичный маршрут для получения топ-10 игроков
+  @Public()
+  @Get('top10')
+  async getTopPlayers(): Promise<TopPlayer[]> {
+    const top10: TopPlayer[] = await this.usersService.getTop10();
+
+    return top10;
   }
 }

@@ -41,7 +41,7 @@ export class AuthController {
 
     response.cookie('jwt', token, {
       httpOnly: true,
-      secure: true,
+      secure: false,
       maxAge: 3600 * 24 * 7 * 1000,
     });
 
@@ -64,7 +64,7 @@ export class AuthController {
 
     response.cookie('jwt', token, {
       httpOnly: true,
-      secure: true,
+      secure: false,
       maxAge: 3600 * 24 * 7 * 1000,
     });
 
@@ -77,7 +77,7 @@ export class AuthController {
     // Удаляем cookie с токеном
     response.cookie('jwt', '', {
       httpOnly: true,
-      secure: true,
+      secure: false,
       expires: new Date(0), // Устанавливаем срок жизни cookie на прошлую дату
     });
 

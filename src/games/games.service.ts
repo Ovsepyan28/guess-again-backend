@@ -6,7 +6,7 @@ import { QuestionsService } from 'src/questions/questions.service';
 import { UsersService } from 'src/users/users.service';
 
 import { INITIAL_GAME_LIVES } from './games.constants';
-import { GameQuestionState, TopPlayer } from './games.interfaces';
+import { GameQuestionState } from './games.interfaces';
 @Injectable()
 export class GamesService {
   constructor(
@@ -91,20 +91,5 @@ export class GamesService {
       where: { id: game.id },
       data: updatedGameData,
     });
-  }
-
-  // Метод для получения топ-10 игроков по максимальному счёту
-  async getTop10(): Promise<TopPlayer[]> {
-    const topPlayers = await this.prisma.user.findMany({
-      orderBy: {
-        maxScore: 'desc',
-      },
-      take: 10, // Ограничение на 10 игроков
-      select: {
-        userName: true,
-        maxScore: true,
-      },
-    });
-    return topPlayers;
   }
 }

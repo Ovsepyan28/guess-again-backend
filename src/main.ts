@@ -5,7 +5,11 @@ import * as dotenv from 'dotenv';
 
 import { AppModule } from './app.module';
 
-dotenv.config(); // Загрузка переменных окружения из .env файла
+// Выбираем, какой .env файл загружать в зависимости от режима (development или production)
+const env = process.env.NODE_ENV || 'development'; // По умолчанию используется development
+dotenv.config({
+  path: `.env.${env}`,
+});
 
 async function bootstrap() {
   const PORT = process.env.PORT || 5000;
