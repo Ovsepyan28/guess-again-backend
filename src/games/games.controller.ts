@@ -3,15 +3,20 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
   Request,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Game, GameStatus, Question as QuestionModel } from '@prisma/client';
 import { RequestWithUserPayload } from 'src/auth/auth.interfaces';
 import { Question } from 'src/questions/questions.interfaces';
 import { QuestionsService } from 'src/questions/questions.service';
+import { _GameQuestionState } from 'swagger/typeToClass/_GameQuestionState';
+import { _NewGameRequest } from 'swagger/typeToClass/_NewGameRequest';
+import { _SubmitAnswerResponse } from 'swagger/typeToClass/_SubmitAnswerResponse';
 
 import { SubmitAnswerDto } from './dto/submit.answer.dto';
 import { INVALID_DATA_PROVIDED, NOT_FOUND_GAME_BY_ID } from './games.constants';
@@ -22,6 +27,7 @@ import {
 } from './games.interfaces';
 import { GamesService } from './games.service';
 
+@ApiTags('Игра')
 @Controller('games')
 export class GamesController {
   constructor(
@@ -30,6 +36,12 @@ export class GamesController {
   ) {}
 
   // Маршрут для создания новой игры
+  @ApiOperation({ summary: 'Создание новой игры' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Игра создана',
+    type: _NewGameRequest,
+  })
   @Post('new')
   async createNewGame(
     @Request() request: RequestWithUserPayload,
@@ -42,6 +54,12 @@ export class GamesController {
   }
 
   // Получение состояния игры и вопроса по ID игры
+  @ApiOperation({ summary: 'Получение состояния игры и вопроса' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Игра найдена',
+    type: _GameQuestionState,
+  })
   @Get(':id')
   async getGameQuestionState(
     @Param('id') id: Game['id'],
@@ -91,6 +109,12 @@ export class GamesController {
   }
 
   // Маршрут для отправки ответа на вопрос
+  @ApiOperation({ summary: 'Отправка выбранного варианта ответа' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Ответ обработан',
+    type: _SubmitAnswerResponse,
+  })
   @Post('answer')
   async submitAnswer(
     @Body() submitAnswerDto: SubmitAnswerDto,

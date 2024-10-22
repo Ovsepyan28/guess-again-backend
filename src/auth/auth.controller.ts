@@ -9,9 +9,11 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { Response } from 'express';
 import { UsersService } from 'src/users/users.service';
+import { _AuthResponse } from 'swagger/typeToClass/_AuthResponse';
 
 import { LOGOUT_SUCCESSFUL } from './auth.constants';
 import { AuthResponse, RequestWithUserPayload, Token } from './auth.interfaces';
@@ -20,6 +22,7 @@ import { Public } from './decorators/public.decorator';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signUp.dto';
 
+@ApiTags('Аутентификация')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -28,6 +31,12 @@ export class AuthController {
   ) {}
 
   // Открытый маршрут для входа
+  @ApiOperation({ summary: 'Аутентификация пользователя' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Успешная аутентификация',
+    type: _AuthResponse,
+  })
   @Public()
   @Post('/login')
   @UsePipes(new ValidationPipe())
@@ -45,12 +54,18 @@ export class AuthController {
       maxAge: 3600 * 24 * 7 * 1000,
     });
 
-    response.status(200); // Устанавливаем статус ответа на 200, так по умолчанию метод POST позвращает 201
+    response.status(HttpStatus.OK); // Устанавливаем статус ответа на 200, так по умолчанию метод POST возвращает 201
 
     return this.authService.generateAuthResponse(user);
   }
 
   // Открытый маршрут для регистрации
+  @ApiOperation({ summary: 'Регистрация пользователя' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Успешная регистрация',
+    type: _AuthResponse,
+  })
   @Public()
   @Post('/signup')
   @UsePipes(new ValidationPipe())
@@ -72,6 +87,11 @@ export class AuthController {
   }
 
   // Маршрут для выхода
+  @ApiOperation({ summary: 'Выход из системы' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Вы успешно вышли из системы',
+  })
   @Post('/logout')
   async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
     // Удаляем cookie с токеном
@@ -85,6 +105,12 @@ export class AuthController {
   }
 
   // Маршрут для получения информации о текущем пользователе
+  @ApiOperation({ summary: 'Проверка аутентификации пользователя' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Пользователь аутентифицтрован',
+    type: _AuthResponse,
+  })
   @Get('/whoami')
   async whoami(
     @Request() request: RequestWithUserPayload,
