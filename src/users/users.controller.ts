@@ -3,15 +3,23 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { Role } from 'src/auth/decorators/role.decorator';
 import { RoleGuard } from 'src/auth/role.guard';
+import { _TopPlayer } from 'swagger/typeToClass/_TopPlayer';
 
 import { CreateUserDto } from './dto/create.user.dto';
 import {
@@ -21,11 +29,13 @@ import {
 import { TopPlayer } from './users.interfaces';
 import { UsersService } from './users.service';
 
+@ApiTags('Пользователи')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   // Эндпоинт для создания нового пользователя
+  @ApiExcludeEndpoint()
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Post()
@@ -34,6 +44,7 @@ export class UsersController {
   }
 
   // Эндпоинт для получения всех пользователей
+  @ApiExcludeEndpoint()
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get()
@@ -42,6 +53,7 @@ export class UsersController {
   }
 
   // Эндпоинт для поиска пользователя по id
+  @ApiExcludeEndpoint()
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get('id/:id')
@@ -56,6 +68,7 @@ export class UsersController {
   }
 
   // Эндпоинт для поиска пользователя по email
+  @ApiExcludeEndpoint()
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Get('email/:email')
@@ -70,6 +83,7 @@ export class UsersController {
   }
 
   // Эндпоинт для удаления пользователя по id
+  @ApiExcludeEndpoint()
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Delete('id/:id')
@@ -84,6 +98,7 @@ export class UsersController {
   }
 
   // Эндпоинт для удаления пользователя по email
+  @ApiExcludeEndpoint()
   @Role('ADMIN')
   @UseGuards(RoleGuard)
   @Delete('email/:email')
@@ -98,6 +113,12 @@ export class UsersController {
   }
 
   // Публичный маршрут для получения топ-10 игроков
+  @ApiOperation({ summary: 'Получение состояния игры и вопроса' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Список лучших игорьков',
+    type: [_TopPlayer],
+  })
   @Public()
   @Get('top10')
   async getTopPlayers(): Promise<TopPlayer[]> {
