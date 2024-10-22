@@ -10,3 +10,7 @@ Backend для игры **GuessAgain**, в которой пользовател
 - **PostgreSQL**
 - **BcryptJS**
 - **Typescript**
+
+## Документация на API
+
+- **http://194.226.49.191:5555/api/docs**
