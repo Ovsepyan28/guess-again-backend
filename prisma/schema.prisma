@@ -25,7 +25,8 @@ model Game {
   lives          Int        @default(3) // Количество жизней
   status         GameStatus @default(CREATED)
   lastQuestionId String? // Идентификатор последнего вопроса
-  User           User       @relation(fields: [userId], references: [id]) // Связь с пользователем, который создал игру
+  User           User       @relation(fields: [userId], references: [id], onDelete: Cascade) // Связь с пользователем, который создал игру
+  Question       Question[] // Связь с вопрасами в этой игре
 }
 
 model Question {
@@ -35,13 +36,14 @@ model Question {
   correctAnswerId String // Идентификатор правильного ответа (ссылка на AnswerOption)
   AnswerOption    AnswerOption[] // Связь с предложенными ответами
   Frame           Frame          @relation(fields: [frameId], references: [id]) // Связь с загаданным кадром
+  Game            Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
 }
 
 model AnswerOption {
   id         String   @id @default(uuid()) // Уникальный идентификатор предложенного ответа
   questionId String // Идентификатор вопроса, к которому относится ответ
   movieId    String // Идентификатор фильма, который предлагается в качестве ответа
-  Question   Question @relation(fields: [questionId], references: [id]) // Связь с вопросом
+  Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade) // Связь с вопросом
   Movie      Movie    @relation(fields: [movieId], references: [id]) // Связь с фильмом
 }
 
