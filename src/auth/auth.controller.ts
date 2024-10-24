@@ -108,7 +108,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Проверка аутентификации пользователя' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Пользователь аутентифицтрован',
+    description: 'Пользователь аутентифицирован',
     type: _AuthResponse,
   })
   @Get('/whoami')

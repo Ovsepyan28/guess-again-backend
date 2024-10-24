@@ -6,7 +6,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import { Request as ExpressRequest } from 'express';
+import { UsersService } from 'src/users/users.service';
 
 import { UNAUTHORIZED_USER_AUTH } from './auth.constants';
 import { JwtPayloadWithTimes, RequestWithUserPayload } from './auth.interfaces';
@@ -17,6 +19,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
+    private readonly usersService: UsersService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,6 +43,13 @@ export class AuthGuard implements CanActivate {
 
     try {
       const user = this.jwtService.verify<JwtPayloadWithTimes>(token);
+      const foundUser: User = await this.usersService.findUserById(user.id);
+
+      // Если пользователь отсутствует в базе, выбрасываем исключение UnauthorizedException
+      if (!foundUser) {
+        throw new UnauthorizedException(UNAUTHORIZED_USER_AUTH);
+      }
+
       (request as RequestWithUserPayload).user = user;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
